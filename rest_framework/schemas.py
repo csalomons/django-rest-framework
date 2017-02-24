@@ -343,7 +343,10 @@ class SchemaGenerator(object):
 
         try:
             view.check_permissions(view.request)
-        except (exceptions.APIException, Http404, PermissionDenied):
+        except PermissionDenied:
+            if not getattr(view, '_ignore_view_permissions', False):
+                return False
+        except (exceptions.APIException, Http404):
             return False
         return True
 
@@ -586,6 +589,7 @@ def get_schema_view(title=None, url=None, urlconf=None, renderer_classes=None):
 
     class SchemaView(APIView):
         _ignore_model_permissions = True
+        _ignore_view_permissions = True
         exclude_from_schema = True
         renderer_classes = rclasses
 
